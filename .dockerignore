@@ -1,0 +1,17 @@
+.git
+.agent
+.agents
+.claude
+.env
+.env.*
+vendor
+node_modules
+public/build
+public/hot
+storage/logs
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+*.log
+boost.json
+opencode.json
