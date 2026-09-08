@@ -1,10 +1,10 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.5-fpm-alpine
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-RUN apk add --no-cache postgresql-client \
-    && docker-php-ext-install pdo_pgsql \
-    && docker-php-ext-enable opcache
+RUN apk add --no-cache postgresql-client postgresql-dev oniguruma-dev libzip-dev \
+    && docker-php-ext-install pdo_pgsql bcmath mbstring zip
+
 
 WORKDIR /app
 
