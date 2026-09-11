@@ -38,5 +38,6 @@ Route::post('/setup/complete', [SetupController::class, 'complete'])->name('setu
 Route::post('/setup/reset', [SetupController::class, 'reset'])->name('setup.reset');
 
 Route::resource('bots', BotController::class);
+Route::post('bots/{bot}/register', [BotController::class, 'register'])->name('bots.register');
 Route::resource('conversations', ConversationController::class)->only(['index', 'show']);
 Route::resource('knowledge', KnowledgeController::class);

@@ -109,7 +109,16 @@ class BitrixBotProvisioningService
         $botId = (int) ($response->json('result.bot.id') ?? 0);
 
         if ($botId === 0) {
-            return ['error' => true, 'message' => 'Registro de chatbot devolvio un ID invalido'];
+            $errorDescription = (string) ($response->json('error_description') ?: $response->json('error', ''));
+
+            Log::error('BitrixBotProvisioning: error registrando chatbot', [
+                'member_id' => $token->member_id,
+                'domain' => $domain,
+                'error' => $errorDescription,
+                'body' => $response->body(),
+            ]);
+
+            return ['error' => true, 'message' => $errorDescription !== '' ? $errorDescription : 'Registro de chatbot devolvio un ID invalido'];
         }
 
         Log::info('BitrixBotProvisioning: chatbot 2.0 registrado', [

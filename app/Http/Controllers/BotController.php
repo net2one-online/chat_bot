@@ -173,6 +173,22 @@ class BotController extends Controller
         return ['success' => true, 'bot_id' => $result['bot_id']];
     }
 
+    /**
+     * Retry the Bitrix Chatbot 2.0 registration for an existing bot.
+     */
+    public function register(Bot $bot)
+    {
+        $registration = $this->registerInBitrix($bot);
+
+        if (isset($registration['error'])) {
+            return redirect()->route('bots.index')
+                ->with('error', 'No se pudo registrar "'.$bot->name.'" en Bitrix24: '.($registration['message'] ?? 'Error desconocido'));
+        }
+
+        return redirect()->route('bots.index')
+            ->with('success', 'Bot "'.$bot->name.'" registrado en Bitrix24 como Chatbot '.$registration['bot_id']);
+    }
+
     public function show(Bot $bot)
     {
         $bot->loadCount('conversations');

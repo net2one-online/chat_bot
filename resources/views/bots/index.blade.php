@@ -67,6 +67,12 @@
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                         <a href="{{ route('bots.show', $bot->id) }}" class="text-indigo-600 hover:text-indigo-900">{{ __('Ver') }}</a>
                         <a href="{{ route('bots.edit', $bot->id) }}" class="text-yellow-600 hover:text-yellow-900">{{ __('Editar') }}</a>
+                        @if(! $bot->bitrix_bot_id)
+                            <form method="POST" action="{{ route('bots.register', $bot->id) }}" class="inline">
+                                @csrf
+                                <button type="submit" class="text-green-600 hover:text-green-900">{{ __('Registrar en Bitrix') }}</button>
+                            </form>
+                        @endif
                         <form method="POST" action="{{ route('bots.destroy', $bot->id) }}" class="inline"
                               onsubmit="return confirm('{{ __('¿Eliminar este bot?') }}')">
                             @csrf
