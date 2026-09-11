@@ -58,6 +58,28 @@ class BitrixBotProvisioningService
     }
 
     /**
+     * Resolve the public base URL of this installation so bot webhooks always
+     * point to a reachable HTTPS host. Prefers APP_URL when it is an explicit
+     * non-local URL, then the Railway public domain, then the configured URL.
+     */
+    public function resolveAppUrl(): string
+    {
+        $appUrl = rtrim((string) env('APP_URL', ''), '/');
+
+        if ($appUrl !== '' && ! str_contains($appUrl, 'localhost')) {
+            return $appUrl;
+        }
+
+        $railwayDomain = rtrim((string) env('RAILWAY_PUBLIC_DOMAIN', ''), '/');
+
+        if ($railwayDomain !== '') {
+            return 'https://'.str_replace(['https://', 'http://'], '', $railwayDomain);
+        }
+
+        return rtrim(config('app.url'), '/');
+    }
+
+    /**
      * Register a Chatbot 2.0 (open line) in the portal of the given token so it
      * shows up in the Contact Center bot selector. Returns the Bitrix bot id,
      * the generated bot token and the resolved domain.
@@ -76,7 +98,7 @@ class BitrixBotProvisioningService
         }
 
         $botToken = 'bt_'.bin2hex(random_bytes(24));
-        $webhookUrl = rtrim(config('app.url'), '/').'/api/bitrix/webhook?member='.urlencode($token->member_id);
+        $webhookUrl = $this->resolveAppUrl().'/api/bitrix/webhook?member='.urlencode($token->member_id);
 
         $response = Http::timeout(30)->post("https://{$domain}/rest/imbot.v2.Bot.register", [
             'auth' => $accessToken,

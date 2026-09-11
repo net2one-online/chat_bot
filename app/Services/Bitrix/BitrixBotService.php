@@ -17,7 +17,13 @@ class BitrixBotService
 
     protected function webhookUrl(string $memberId): string
     {
-        return rtrim(config('app.url'), '/').'/api/bitrix/webhook?member='.urlencode($memberId);
+        $appUrl = rtrim((string) env('APP_URL', ''), '/');
+
+        if ($appUrl === '' || str_contains($appUrl, 'localhost')) {
+            $appUrl = resolve(BitrixBotProvisioningService::class)->resolveAppUrl();
+        }
+
+        return $appUrl.'/api/bitrix/webhook?member='.urlencode($memberId);
     }
 
     public function registerBot(array $params): array
