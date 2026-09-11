@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BitrixToken;
+use App\Models\Bot;
 use App\Services\Bitrix\BitrixOAuthService;
 use App\Services\Settings\SettingsService;
 use Illuminate\Support\Facades\Http;
@@ -53,6 +54,9 @@ class SetupController extends Controller
         $setupCompleted = $token->setup_completed ?? false;
         $contactCenterUrl = $domain ? "https://{$domain}/contact-center/" : '#';
         $botId = $token->file_bot_id;
+        $appBots = Bot::query()
+            ->orderBy('id')
+            ->get(['name', 'bitrix_bot_id', 'openline_id']);
 
         return view('setup.index', compact(
             'token',
@@ -61,6 +65,7 @@ class SetupController extends Controller
             'setupCompleted',
             'contactCenterUrl',
             'botId',
+            'appBots',
         ));
     }
 

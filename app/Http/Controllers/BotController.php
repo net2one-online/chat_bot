@@ -79,10 +79,15 @@ class BotController extends Controller
 
         $bot = Bot::create($data);
 
-        $this->registerInBitrix($bot);
+        $registration = $this->registerInBitrix($bot);
+
+        if (isset($registration['error'])) {
+            return redirect()->route('bots.index')
+                ->with('error', 'Bot creado, pero NO se registró en Bitrix24: '.($registration['message'] ?? 'Error desconocido'));
+        }
 
         return redirect()->route('bots.index')
-            ->with('success', 'Bot creado correctamente');
+            ->with('success', 'Bot creado correctamente'.(isset($registration['bot_id']) ? ' (registrado en Bitrix24 como Chatbot '.$registration['bot_id'].')' : ''));
     }
 
     /**
@@ -135,7 +140,7 @@ class BotController extends Controller
      * the Contact Center bot selector. Non-fatal: the bot is kept locally even
      * if the remote registration fails, so the user can retry later.
      */
-    protected function registerInBitrix(Bot $bot): void
+    protected function registerInBitrix(Bot $bot): array
     {
         $token = $this->oauth->tenantToken();
 
@@ -144,7 +149,7 @@ class BotController extends Controller
                 'bot_id' => $bot->id,
             ]);
 
-            return;
+            return ['error' => true, 'message' => 'No hay portal Bitrix24 configurado'];
         }
 
         $code = 'asistente_'.substr($token->member_id, 0, 8).'_'.$bot->id;
@@ -157,13 +162,15 @@ class BotController extends Controller
                 'reason' => $result['message'] ?? 'unknown',
             ]);
 
-            return;
+            return ['error' => true, 'message' => $result['message'] ?? 'Error desconocido'];
         }
 
         $bot->update([
             'bitrix_bot_id' => $result['bot_id'],
             'bot_token' => $result['bot_token'],
         ]);
+
+        return ['success' => true, 'bot_id' => $result['bot_id']];
     }
 
     public function show(Bot $bot)

@@ -49,6 +49,54 @@
     </div>
 
     <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">{{ __('Paso 1b: Tus bot de atencion') }}</h2>
+        <p class="text-sm text-gray-600 mb-4">
+            {{ __('Estos son los bots que creaste en el panel. Selecciona en Contact Center el que tiene el ID de Bitrix correspondiente:') }}
+        </p>
+
+        @if($appBots->isEmpty())
+            <p class="text-sm text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                {{ __('Aun no has creado ningun bot en el panel. Crealo primero en la seccion Bots.') }}
+            </p>
+        @else
+            <div class="overflow-x-auto mb-4">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Nombre') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('ID de Bitrix') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Open Channel') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Estado registro') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($appBots as $bot)
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $bot->name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($bot->bitrix_bot_id)
+                                        <span class="font-mono text-sm text-gray-900">{{ $bot->bitrix_bot_id }}</span>
+                                    @else
+                                        <span class="text-sm text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $bot->openline_id ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($bot->bitrix_bot_id)
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">{{ __('Registrado') }}</span>
+                                    @else
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">{{ __('Sin registrar') }}</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
         <h2 class="text-lg font-medium text-gray-900 mb-4">{{ __('Paso 2: Conectar a canales de atencion') }}</h2>
         <p class="text-sm text-gray-600 mb-4">
             {{ __('Para que el bot pueda enviar archivos, debes asignarlo como chatbot en tus canales de atencion.') }}
@@ -90,7 +138,18 @@
             <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1">
                 <li>{{ __('Abre la configuracion de Contact Center en tu portal de Bitrix24.') }}</li>
                 <li>{{ __('Selecciona el canal de atencion que deseas configurar.') }}</li>
-                <li>{{ __('Busca la seccion "Chatbot" y selecciona el bot con ID:') }} <span class="font-mono font-bold">{{ $botId }}</span></li>
+                <li>{{ __('Busca la seccion "Chatbot" y selecciona el bot por su nombre') }}
+                    @if($appBots->isNotEmpty())
+                        @foreach($appBots as $bot)
+                            @if($bot->bitrix_bot_id)
+                                <span class="font-mono font-bold text-gray-900">{{ $bot->name }}</span>{{ ! $loop->last ? ', ' : '' }}
+                            @endif
+                        @endforeach
+                    @else
+                        <span class="font-mono font-bold">{{ __('(aun sin bots creados)') }}</span>
+                    @endif
+                </li>
+                <li>{{ __('Para enviar archivos, el bot "Asistente de archivos" queda registrado con ID:') }} <span class="font-mono font-bold">{{ $botId }}</span></li>
                 <li>{{ __('Guarda los cambios.') }}</li>
                 <li>{{ __('Haz clic en "Completar configuracion" abajo.') }}</li>
             </ol>
