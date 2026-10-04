@@ -14,10 +14,12 @@ class ClientProfileService
 
     /**
      * Capture the client data that Bitrix already knows about an open-line
-     * chat: the chat (visitor) name plus the name, last name, phone, email and
-     * locality held by the CRM entity linked to the dialog. Persists the result
-     * on the conversation (once per conversation; a null client_data means it
-     * was never attempted, an empty array that nothing was found).
+     * chat from the CRM entity linked to the dialog (name, last name, phone,
+     * email, locality and company). The chat name is deliberately ignored:
+     * livechat generates it (e.g. "Green Guest #17 - <page title>") and it is
+     * not a reliable visitor name. Persists the result on the conversation
+     * (once per conversation; a null client_data means it was never attempted,
+     * an empty array that nothing was found).
      */
     public function capture(Conversation $conversation): void
     {
@@ -46,12 +48,6 @@ class ClientProfileService
 
         if ($entity !== null) {
             $profile = array_merge($profile, $this->entityProfile($entity));
-        }
-
-        $chatName = $this->nameFromChat((string) ($dialog['name'] ?? ''));
-
-        if ($chatName !== '') {
-            $profile['name'] = $profile['name'] ?? $chatName;
         }
 
         $updates = ['client_data' => $profile];
@@ -123,6 +119,12 @@ class ClientProfileService
             }
         }
 
+        $company = $this->companyTitle($entity, $data);
+
+        if ($company !== '') {
+            $profile['company'] = $company;
+        }
+
         return $profile;
     }
 
@@ -142,22 +144,21 @@ class ClientProfileService
     }
 
     /**
-     * Normalize the open line chat name into a visitor name, stripping the
-     * "Green Guest #17 - " boilerplate livechat adds. Empty when the chat only
-     * holds a generic guest placeholder.
+     * Resolve the company title for the linked CRM entity: leads carry
+     * COMPANY_TITLE, contacts need a lookup by COMPANY_ID.
+     *
+     * @param  array{type: string, id: int}  $entity
      */
-    protected function nameFromChat(string $chatName): string
+    protected function companyTitle(array $entity, array $data): string
     {
-        $chatName = trim($chatName);
+        $company = trim((string) ($data['COMPANY_TITLE'] ?? ''));
 
-        if (preg_match('/\b(?:Guest|Invitado|Convidado|Visitante)\s+#\d+\s*-\s*(.+)$/iu', $chatName, $matches)) {
-            return trim($matches[1]);
+        if ($company !== '' || ($entity['type'] !== 'CONTACT' && empty($data['COMPANY_ID']))) {
+            return $company;
         }
 
-        if (preg_match('/\b(?:Guest|Invitado|Convidado|Visitante)(?:\s+#\d+)?$/iu', $chatName)) {
-            return '';
-        }
+        $companyData = $this->crm->searchCompany((string) $data['COMPANY_ID']);
 
-        return $chatName;
+        return trim((string) ($companyData['TITLE'] ?? ''));
     }
 }

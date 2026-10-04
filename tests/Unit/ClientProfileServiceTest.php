@@ -40,7 +40,7 @@ class ClientProfileServiceTest extends TestCase
         ], $overrides);
     }
 
-    public function test_capture_stores_chat_name_when_no_crm_entity_is_bound(): void
+    public function test_capture_stores_nothing_when_no_crm_entity_is_bound(): void
     {
         $openChannel = $this->createMock(OpenChannelService::class);
         $openChannel->expects($this->once())
@@ -54,42 +54,29 @@ class ClientProfileServiceTest extends TestCase
         $this->service($openChannel, $crm)->capture($conversation);
 
         $fresh = $conversation->fresh();
-        $this->assertSame('María Gonzalez', $fresh->client_data['name']);
-        $this->assertNull($fresh->client_data['phone'] ?? null);
+        $this->assertSame([], $fresh->client_data);
+        $this->assertArrayNotHasKey('phone', $fresh->client_data);
         $this->assertArrayNotHasKey('crm_entity_type', $fresh->client_data);
         $this->assertSame('599', $fresh->contact_id);
     }
 
-    public function test_capture_strips_livechat_guest_boilerplate_from_chat_name(): void
+    public function test_capture_does_not_use_chat_name_when_no_crm_entity_is_bound(): void
     {
         $openChannel = $this->createMock(OpenChannelService::class);
         $openChannel->expects($this->once())
             ->method('getDialog')
             ->with('chat1234')
-            ->willReturn($this->dialog(['name' => 'Green Guest #17 - María Gonzalez']));
+            ->willReturn($this->dialog(['name' => 'Green Guest #17 - Lucero castirllo']));
 
         $crm = $this->createMock(BitrixCrmService::class);
         $conversation = $this->conversation();
 
         $this->service($openChannel, $crm)->capture($conversation);
 
-        $this->assertSame('María Gonzalez', $conversation->fresh()->client_data['name']);
-    }
-
-    public function test_capture_treats_plain_guest_placeholder_as_unknown_name(): void
-    {
-        $openChannel = $this->createMock(OpenChannelService::class);
-        $openChannel->expects($this->once())
-            ->method('getDialog')
-            ->with('chat1234')
-            ->willReturn($this->dialog(['name' => 'Green Guest #17']));
-
-        $crm = $this->createMock(BitrixCrmService::class);
-        $conversation = $this->conversation();
-
-        $this->service($openChannel, $crm)->capture($conversation);
-
-        $this->assertSame([], $conversation->fresh()->client_data);
+        $fresh = $conversation->fresh();
+        $this->assertSame([], $fresh->client_data);
+        $this->assertArrayNotHasKey('name', $fresh->client_data);
+        $this->assertSame('599', $fresh->contact_id);
     }
 
     public function test_capture_merges_contact_entity_and_links_conversation(): void
@@ -110,7 +97,12 @@ class ClientProfileServiceTest extends TestCase
                 'PHONE' => [['TYPE' => 'WORK', 'VALUE' => '1122334455']],
                 'EMAIL' => [['TYPE' => 'WORK', 'VALUE' => 'maria@example.com']],
                 'ADDRESS_CITY' => 'Rosario',
+                'COMPANY_ID' => '14',
             ]);
+        $crm->expects($this->once())
+            ->method('searchCompany')
+            ->with('14')
+            ->willReturn(['ID' => '14', 'TITLE' => 'Net2one SRL']);
 
         $conversation = $this->conversation();
 
@@ -122,6 +114,7 @@ class ClientProfileServiceTest extends TestCase
         $this->assertSame('1122334455', $fresh->client_data['phone']);
         $this->assertSame('maria@example.com', $fresh->client_data['email']);
         $this->assertSame('Rosario', $fresh->client_data['locality']);
+        $this->assertSame('Net2one SRL', $fresh->client_data['company']);
         $this->assertSame('CONTACT', $fresh->client_data['crm_entity_type']);
         $this->assertSame(275, $fresh->client_data['crm_entity_id']);
         $this->assertSame('275', $fresh->contact_id);
@@ -139,7 +132,7 @@ class ClientProfileServiceTest extends TestCase
         $crm->expects($this->once())
             ->method('getLead')
             ->with('1209')
-            ->willReturn(['NAME' => 'Juan', 'LAST_NAME' => 'Perez']);
+            ->willReturn(['NAME' => 'Juan', 'LAST_NAME' => 'Perez', 'COMPANY_TITLE' => 'ACME S.A.']);
 
         $conversation = $this->conversation();
 
@@ -147,33 +140,10 @@ class ClientProfileServiceTest extends TestCase
 
         $fresh = $conversation->fresh();
         $this->assertSame('Juan', $fresh->client_data['name']);
+        $this->assertSame('ACME S.A.', $fresh->client_data['company']);
         $this->assertSame('LEAD', $fresh->client_data['crm_entity_type']);
         $this->assertSame(1209, $fresh->client_data['crm_entity_id']);
         $this->assertSame('599', $fresh->contact_id);
-    }
-
-    public function test_capture_prefers_crm_entity_fields_over_chat_name(): void
-    {
-        $openChannel = $this->createMock(OpenChannelService::class);
-        $openChannel->expects($this->once())
-            ->method('getDialog')
-            ->with('chat1234')
-            ->willReturn($this->dialog([
-                'entity_data_1' => 'Y|LEAD|1209|N|N|343|1773682918|0|0|0',
-                'name' => 'Green Guest #17 - María Fernandez',
-            ]));
-
-        $crm = $this->createMock(BitrixCrmService::class);
-        $crm->expects($this->once())
-            ->method('getLead')
-            ->with('1209')
-            ->willReturn(['NAME' => 'María']);
-
-        $conversation = $this->conversation();
-
-        $this->service($openChannel, $crm)->capture($conversation);
-
-        $this->assertSame('María', $conversation->fresh()->client_data['name']);
     }
 
     public function test_capture_is_a_noop_when_client_data_is_already_captured(): void

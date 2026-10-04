@@ -34,6 +34,7 @@ class PromptServiceTest extends TestCase
                 'phone' => '1122334455',
                 'email' => 'maria@example.com',
                 'locality' => 'Rosario',
+                'company' => 'Net2one SRL',
             ],
         ]);
 
@@ -41,6 +42,7 @@ class PromptServiceTest extends TestCase
         $this->assertStringContainsString('María', $prompt);
         $this->assertStringContainsString('1122334455', $prompt);
         $this->assertStringContainsString('maria@example.com', $prompt);
+        $this->assertStringContainsString('Net2one SRL', $prompt);
     }
 
     public function test_system_prompt_does_not_render_client_data_when_absent(): void

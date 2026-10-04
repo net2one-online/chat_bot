@@ -38,6 +38,7 @@ class PromptService
             $crmContext .= '- Telefono: '.($client['phone'] ?? 'No disponible')."\n";
             $crmContext .= '- Email: '.($client['email'] ?? 'No disponible')."\n";
             $crmContext .= '- Localidad: '.($client['locality'] ?? 'No disponible')."\n";
+            $crmContext .= '- Compania: '.($client['company'] ?? 'No disponible')."\n";
         }
 
         $systemPrompt = <<<PROMPT
