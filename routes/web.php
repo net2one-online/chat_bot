@@ -9,9 +9,22 @@ use App\Http\Controllers\EmbedController;
 use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SetupController;
+use App\Services\Agent\ToolRegistry;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+Route::get('/health', function () {
+    $commit = trim((string) shell_exec('git rev-parse --short HEAD 2>/dev/null')) ?: null;
+    $registry = app(ToolRegistry::class);
+
+    return response()->json([
+        'status' => 'ok',
+        'app' => 'bot_chat',
+        'commit' => $commit,
+        'register_client_data' => $registry->has('register_client_data'),
+    ]);
+})->name('health');
 
 Route::get('/locale/{lang}', function (string $lang) {
     session(['locale' => $lang]);
