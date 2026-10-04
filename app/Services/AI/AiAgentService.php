@@ -105,6 +105,10 @@ class AiAgentService
             }
         }
 
+        if ($conversation->client_data !== null) {
+            $context['client'] = $conversation->client_data;
+        }
+
         if (! empty($context['contact'])) {
             $deals = $this->crmService->searchDeals($conversation->contact_id);
             if (! empty($deals)) {

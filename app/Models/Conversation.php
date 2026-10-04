@@ -19,6 +19,7 @@ class Conversation extends Model
         'bitrix_chat_id',
         'bitrix_session_id',
         'contact_id',
+        'client_data',
         'status',
         'human_mode',
         'welcome_menu_shown',
@@ -30,6 +31,7 @@ class Conversation extends Model
         'human_mode' => 'boolean',
         'welcome_menu_shown' => 'boolean',
         'welcome_menu_attempts' => 'integer',
+        'client_data' => 'array',
     ];
 
     public function bot(): BelongsTo

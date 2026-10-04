@@ -8,6 +8,7 @@ use App\Models\Message;
 use App\Services\Agent\WelcomeMenuService;
 use App\Services\AI\AiAgentService;
 use App\Services\Bitrix\BitrixBotService;
+use App\Services\Bitrix\ClientProfileService;
 use App\Services\Bitrix\OpenChannelService;
 use App\Support\TenantContext;
 use Illuminate\Bus\Queueable;
@@ -53,6 +54,7 @@ class ProcessIncomingMessage implements ShouldQueue
         }
 
         $conversation = $this->getOrCreateConversation($bot);
+        $this->captureClientProfile($bot, $conversation);
         $this->handleMessageGrouping($conversation);
 
         Message::create([
@@ -152,6 +154,20 @@ class ProcessIncomingMessage implements ShouldQueue
         }
 
         return $conversation;
+    }
+
+    /**
+     * Capture the client profile Bitrix already holds for an open-line chat
+     * (widget/CRM data) so the agent can prefill it and only ask for missing
+     * fields. Only runs once per conversation.
+     */
+    protected function captureClientProfile(Bot $bot, Conversation $conversation): void
+    {
+        if (! $bot->openline_id) {
+            return;
+        }
+
+        app(ClientProfileService::class)->capture($conversation);
     }
 
     protected function handleMessageGrouping(Conversation $conversation): void

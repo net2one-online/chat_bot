@@ -30,6 +30,16 @@ class PromptService
             }
         }
 
+        if (! empty($context['client'])) {
+            $client = $context['client'];
+            $crmContext .= "\n\nRegistro del cliente (datos ya obtenidos):\n";
+            $crmContext .= '- Nombre: '.($client['name'] ?? 'No disponible')."\n";
+            $crmContext .= '- Apellido: '.($client['last_name'] ?? 'No disponible')."\n";
+            $crmContext .= '- Telefono: '.($client['phone'] ?? 'No disponible')."\n";
+            $crmContext .= '- Email: '.($client['email'] ?? 'No disponible')."\n";
+            $crmContext .= '- Localidad: '.($client['locality'] ?? 'No disponible')."\n";
+        }
+
         $systemPrompt = <<<PROMPT
 {$basePrompt}
 
@@ -42,6 +52,7 @@ class PromptService
 - Si el cliente solicita hablar con una persona, te pide una derivacion ("me derivas", "pasame con un humano", "atencion al cliente"), o su consulta supera tu alcance, o ya resolviste lo principal del tema, utiliza la herramienta transfer_to_human de inmediato sin buscar mas datos: el sistema mostrara al cliente el menu de canales de atencion para elegir con quien seguir.
 - Responde de forma natural y profesional.
 - Si necesitas consultar informacion del CRM, utiliza las herramientas disponibles.
+- Usa los datos del cliente ya registrados y no vuelvas a pedirlos; si faltan datos en el Registro del cliente, solicitalos al cliente.
 
 ## Base de conocimiento:
 {$knowledgeText}

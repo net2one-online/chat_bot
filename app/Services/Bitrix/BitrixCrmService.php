@@ -2,8 +2,6 @@
 
 namespace App\Services\Bitrix;
 
-use Illuminate\Support\Facades\Log;
-
 class BitrixCrmService
 {
     protected BitrixService $bitrix;
@@ -49,6 +47,19 @@ class BitrixCrmService
     {
         $result = $this->bitrix->get('crm.contact.get', [
             'ID' => $contactId,
+        ]);
+
+        if (isset($result['error']) || empty($result)) {
+            return null;
+        }
+
+        return $result;
+    }
+
+    public function getLead(string $leadId): ?array
+    {
+        $result = $this->bitrix->get('crm.lead.get', [
+            'ID' => $leadId,
         ]);
 
         if (isset($result['error']) || empty($result)) {
