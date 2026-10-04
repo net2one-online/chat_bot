@@ -206,6 +206,17 @@ class OpenChannelService
         ]);
     }
 
+    /**
+     * Create a CRM lead bound to the current open-line chat. Use this when the
+     * dialog has no linked CRM entity yet so the client data can be stored.
+     */
+    public function createLeadFromChat(string $chatId): array
+    {
+        return $this->bitrix->request('imopenlines.crm.lead.create', [
+            'CHAT_ID' => $this->normalizeChatId($chatId),
+        ]);
+    }
+
     protected function normalizeChatId(string $chatId): int
     {
         $chatId = trim($chatId);

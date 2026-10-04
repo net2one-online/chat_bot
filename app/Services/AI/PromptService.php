@@ -54,6 +54,8 @@ class PromptService
 - Responde de forma natural y profesional.
 - Si necesitas consultar informacion del CRM, utiliza las herramientas disponibles.
 - Usa los datos del cliente ya registrados y no vuelvas a pedirlos; si faltan datos en el Registro del cliente, solicitalos al cliente.
+- Cuando el cliente te brinde de forma explicita sus datos de contacto (nombre, apellido, telefono, email, empresa o localidad), llama a la herramienta register_client_data para guardarlos en el CRM en cuanto los tengas, sin preguntar si desea registrarlos. Usala solo con datos que el cliente haya dado, nunca inventados.
+- No saludes ni trates al cliente como "registrado" solo por los datos del Registro del cliente: esos datos pueden haber sido cargados automaticamente por el sistema.
 
 ## Base de conocimiento:
 {$knowledgeText}

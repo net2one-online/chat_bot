@@ -69,6 +69,75 @@ class BitrixCrmService
         return $result;
     }
 
+    public function updateLead(string $id, array $fields): array
+    {
+        return $this->bitrix->request('crm.lead.update', [
+            'id' => $id,
+            'fields' => $fields,
+        ]);
+    }
+
+    public function updateContact(string $id, array $fields): array
+    {
+        return $this->bitrix->request('crm.contact.update', [
+            'ID' => $id,
+            'FIELDS' => $fields,
+        ]);
+    }
+
+    /**
+     * Find CRM entity ids (leads/contacts/companies) holding the given phone
+     * number or email address. Returns the raw result (e.g. ["CONTACT" => []])
+     * or an empty array on error.
+     */
+    public function findDuplicates(string $type, array $values, string $entityType): array
+    {
+        $result = $this->bitrix->get('crm.duplicate.findbycomm', [
+            'type' => $type,
+            'values' => $values,
+            'entity_type' => $entityType,
+        ]);
+
+        if (isset($result['error'])) {
+            return [];
+        }
+
+        return is_array($result) ? $result : [];
+    }
+
+    /**
+     * Find an existing company whose title matches exactly (case-insensitive).
+     */
+    public function findCompanyByTitle(string $title): ?int
+    {
+        foreach ($this->searchCompanies($title) as $company) {
+            if (mb_strtolower(trim((string) ($company['TITLE'] ?? ''))) === mb_strtolower(trim($title))) {
+                $id = (int) ($company['ID'] ?? 0);
+
+                if ($id > 0) {
+                    return $id;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function createCompany(string $title): ?int
+    {
+        $result = $this->bitrix->request('crm.company.add', [
+            'fields' => ['TITLE' => $title],
+        ]);
+
+        if (isset($result['error'])) {
+            return null;
+        }
+
+        $id = (int) ($result['result'] ?? 0);
+
+        return $id > 0 ? $id : null;
+    }
+
     public function searchDeals(string $contactId): array
     {
         $result = $this->bitrix->get('crm.deal.list', [

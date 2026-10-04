@@ -14,12 +14,14 @@ class ClientProfileService
 
     /**
      * Capture the client data that Bitrix already knows about an open-line
-     * chat from the CRM entity linked to the dialog (name, last name, phone,
-     * email, locality and company). The chat name is deliberately ignored:
-     * livechat generates it (e.g. "Green Guest #17 - <page title>") and it is
-     * not a reliable visitor name. Persists the result on the conversation
-     * (once per conversation; a null client_data means it was never attempted,
-     * an empty array that nothing was found).
+     * chat from the CRM entity linked to the dialog (phone, email, locality and
+     * company). The chat name is deliberately ignored (livechat generates it,
+     * e.g. "Green Guest #17 - <page title>") and the entity NAME/LAST_NAME are
+     * also ignored: for anonymous visitors Bitrix fills them with generated
+     * placeholder names, so they are only trusted once the client provides them
+     * and register_client_data writes them back to the CRM. Persists the
+     * result on the conversation (once per conversation; a null client_data
+     * means it was never attempted, an empty array that nothing was found).
      */
     public function capture(Conversation $conversation): void
     {
@@ -103,12 +105,8 @@ class ClientProfileService
             'crm_entity_id' => $entity['id'],
         ];
 
-        foreach (['NAME' => 'name', 'LAST_NAME' => 'last_name', 'ADDRESS_CITY' => 'locality'] as $field => $key) {
-            $value = trim((string) ($data[$field] ?? ''));
-
-            if ($value !== '') {
-                $profile[$key] = $value;
-            }
+        if (($value = trim((string) ($data['ADDRESS_CITY'] ?? ''))) !== '') {
+            $profile['locality'] = $value;
         }
 
         foreach (['PHONE' => 'phone', 'EMAIL' => 'email'] as $field => $key) {

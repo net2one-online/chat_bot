@@ -3,6 +3,7 @@
 namespace App\Services\Agent;
 
 use App\Services\Agent\Tools\CreateActivityTool;
+use App\Services\Agent\Tools\RegisterClientDataTool;
 use App\Services\Agent\Tools\SearchCompanyTool;
 use App\Services\Agent\Tools\SearchContactTool;
 use App\Services\Agent\Tools\SearchDealTool;
@@ -19,6 +20,7 @@ class ToolRegistry
         $this->register(new SearchDealTool);
         $this->register(new SearchCompanyTool);
         $this->register(new CreateActivityTool);
+        $this->register(new RegisterClientDataTool);
         $this->register(new SendFileTool);
         $this->register(new TransferHumanTool);
     }

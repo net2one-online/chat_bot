@@ -242,6 +242,42 @@ class OpenAiService
             [
                 'type' => 'function',
                 'function' => [
+                    'name' => 'register_client_data',
+                    'description' => 'Registrar en el CRM los datos de contacto que el cliente indico en la conversacion (nombre, apellido, telefono, email, empresa o localidad). Llamala solo cuando el cliente entregue alguno de estos datos de forma explicita.',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'name' => [
+                                'type' => 'string',
+                                'description' => 'Nombre del cliente',
+                            ],
+                            'last_name' => [
+                                'type' => 'string',
+                                'description' => 'Apellido del cliente',
+                            ],
+                            'phone' => [
+                                'type' => 'string',
+                                'description' => 'Numero de telefono del cliente',
+                            ],
+                            'email' => [
+                                'type' => 'string',
+                                'description' => 'Correo electronico del cliente',
+                            ],
+                            'company' => [
+                                'type' => 'string',
+                                'description' => 'Empresa o compania del cliente',
+                            ],
+                            'locality' => [
+                                'type' => 'string',
+                                'description' => 'Ciudad o localidad del cliente',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'type' => 'function',
+                'function' => [
                     'name' => 'transfer_to_human',
                     'description' => 'Transferir la conversacion a un operador humano cuando la IA no puede resolver la consulta o el cliente solicita hablar con una persona',
                     'parameters' => [

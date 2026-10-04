@@ -151,6 +151,10 @@ class AiAgentService
                 $parameters['bot_id'] = $conversation->bot_id;
             }
 
+            if ($toolName === 'register_client_data') {
+                $parameters['conversation_id'] = $conversation->id;
+            }
+
             Log::info("Ejecutando herramienta: {$toolName}", [
                 'parameters' => $parameters,
                 'conversation_id' => $conversation->id,

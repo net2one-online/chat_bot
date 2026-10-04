@@ -109,8 +109,8 @@ class ClientProfileServiceTest extends TestCase
         $this->service($openChannel, $crm)->capture($conversation);
 
         $fresh = $conversation->fresh();
-        $this->assertSame('María', $fresh->client_data['name']);
-        $this->assertSame('Gonzalez', $fresh->client_data['last_name']);
+        $this->assertArrayNotHasKey('name', $fresh->client_data);
+        $this->assertArrayNotHasKey('last_name', $fresh->client_data);
         $this->assertSame('1122334455', $fresh->client_data['phone']);
         $this->assertSame('maria@example.com', $fresh->client_data['email']);
         $this->assertSame('Rosario', $fresh->client_data['locality']);
@@ -139,7 +139,8 @@ class ClientProfileServiceTest extends TestCase
         $this->service($openChannel, $crm)->capture($conversation);
 
         $fresh = $conversation->fresh();
-        $this->assertSame('Juan', $fresh->client_data['name']);
+        $this->assertArrayNotHasKey('name', $fresh->client_data);
+        $this->assertArrayNotHasKey('last_name', $fresh->client_data);
         $this->assertSame('ACME S.A.', $fresh->client_data['company']);
         $this->assertSame('LEAD', $fresh->client_data['crm_entity_type']);
         $this->assertSame(1209, $fresh->client_data['crm_entity_id']);
