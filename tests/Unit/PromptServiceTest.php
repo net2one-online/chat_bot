@@ -60,4 +60,12 @@ class PromptServiceTest extends TestCase
 
         $this->assertStringContainsString('no vuelvas a pedirlos', $prompt);
     }
+
+    public function test_system_prompt_forbids_using_unknown_client_name_and_mandates_registration(): void
+    {
+        $prompt = $this->service->buildSystemPrompt($this->bot());
+
+        $this->assertStringContainsString('Nunca te dirijas al cliente por su nombre', $prompt);
+        $this->assertStringContainsString('SIEMPRE a la herramienta register_client_data', $prompt);
+    }
 }
