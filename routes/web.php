@@ -11,6 +11,8 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SetupController;
 use App\Services\Agent\ToolRegistry;
 use App\Services\Bitrix\BitrixCrmService;
+use App\Services\Bitrix\BitrixService;
+use App\Support\TenantContext;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -28,13 +30,23 @@ Route::get('/health', function () {
 })->name('health');
 
 Route::get('/debug/lead/{id}', function (string $id) {
+    $member = (string) request()->query('member', '');
+    $member = trim($member);
+
+    if ($member !== '') {
+        TenantContext::set($member);
+    }
+
+    $bitrix = app(BitrixService::class);
+    $domain = $bitrix->getDomain();
     $lead = app(BitrixCrmService::class)->getLead($id);
 
     if (! $lead) {
-        return response()->json(['error' => 'lead no encontrado']);
+        return response()->json(['error' => 'lead no encontrado', 'domain' => $domain, 'member' => TenantContext::memberId() ?? TenantContext::firstConfiguredMemberId()]);
     }
 
     return response()->json([
+        'domain' => $domain,
         'ID' => $lead['ID'] ?? null,
         'TITLE' => $lead['TITLE'] ?? null,
         'NAME' => $lead['NAME'] ?? null,
